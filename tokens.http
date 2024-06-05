@@ -1,0 +1,34 @@
+@baseUrl = http://localhost:3000
+
+### Ulternae
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "nickname": "Ulternae",
+  "email": "Ulternae@gmail.com",
+  "password": "2515963",
+  "sql" : "DROP TABLE users"
+}
+
+### Mth2
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "nickname": "Mth2",
+  "email": "Mah2@example.com",
+  "password": "123456",
+  "sql" : "DROP TABLE users"
+}
+
+### Mth
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "nickname": "Mth",
+  "email": "aliasdon@example.com",
+  "password": "123456",
+  "sql" : "DROP TABLE users"
+}

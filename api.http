@@ -1,0 +1,306 @@
+@authorization = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaWNrbmFtZSI6InVsdGVybmFlIiwiaWQiOiI4ODJhNjVkYy0wNzAzLTQ2MjctYjYyMi1hNTBjZDRlNzk5Y2UiLCJlbWFpbCI6InVsdGVybmFlQGdtYWlsLmNvbSIsImlhdCI6MTcxNzYwMzg0NCwiZXhwIjoxNzE3NjA3NDQ0fQ.edmW-ukzccMtqHpZnUkn0gSmXNPKRaUdFroAsBuTbng
+@baseUrl = http://localhost:3000
+
+@user1 = 882a65dc-0703-4627-b622-a50cd4e799ce
+@user2 = ef8174a8-403e-419d-a4eb-57e5f600fd3a
+@user3 = b09d180b-f031-4139-99a5-545eb076a41e
+@user4 = 9e7d5499-095c-4e1a-88c7-b1a42cfc82dc
+@user5 = 3359757e-03f0-4d0c-b502-ee8921e83ce5
+@user6 = e0febc03-18f3-4ad3-ba88-2266fc3c3a51
+
+@group_id = c91bf17c-c08c-4786-9399-ac24cee01ce0
+@member_id = b09d180b-f031-4139-99a5-545eb076a41e
+@moderator_id = e0febc03-18f3-4ad3-ba88-2266fc3c3a51
+@chat_id = 48b3eccc-5c0f-455c-ae13-0dc7fc798f25
+
+@username = 'Ultisaer'
+@password = 123456
+@email = 'Ultisaer@gmail.com'
+@nickname = 'Ultis'
+
+@urlAvatar = 'https://route.com
+
+// -------------------- Profile ------------------------ //
+
+### Profile
+GET {{baseUrl}}/profile HTTP/1.1
+Content-Type: application/json
+Authorization: {{authorization}}
+
+// -------------------- Register ----------------------- //
+
+### Register
+POST {{baseUrl}}/register
+Content-Type: application/json
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}",
+  "email": "{{email}}",
+  "nickname": "{{nickname}}",
+  "avatar_id": 1
+}
+
+// -------------------- Login -------------------------- //
+
+### Login
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+  "nickname": "{{nickname}}",
+  "email": "{{email}}",
+  "password": "{{password}}"
+}
+
+// -------------------- Profile ------------------------ //
+
+### getProfile
+GET {{baseUrl}}/profile HTTP/1.1
+Content-Type: application/json
+Authorization: {{authorization}}
+
+### updateProfile
+POST {{baseUrl}}/login
+Content-Type: application/json
+Authorization: {{authorization}}
+
+{
+  "username": "{{username}}",
+  "password": "{{password}}",
+  "email": "{{email}}",
+  "nickname": "{{nickname}}",
+  "avatar_id": 9
+}
+
+// -------------------- Avatars ------------------------ //
+### getAvatar
+GET {{baseUrl}}/avatars
+Content-Type: application/json
+Authorization: {{authorization}}
+
+
+### getAvatar_id
+GET {{baseUrl}}/avatars/8
+Content-Type: application/json
+Authorization: {{authorization}}
+
+### create_avatar
+POST {{baseUrl}}/avatars
+Content-Type: application/json
+Authorization: {{authorization}}
+
+{
+  "url" : "{{urlAvatar}}"
+}
+
+// -------------------- Friends ------------------------ //
+### send_request_friend
+POST  {{baseUrl}}/friends
+Content-Type: application/json
+Authorization: {{authorization}}
+
+{
+  "friend_id" : "{{user6}}"
+}
+
+### Friends get all
+GET {{baseUrl}}/friends
+Content-Type: application/json
+Authorization: {{authorization}}
+
+### Friends updateStatus aceptar o rechazar la solicitud de amistas
+PUT {{baseUrl}}/friends/{{user6}}/accepted
+Content-Type: application/json
+Authorization: {{authorization}}
+
+### Friend delete
+DELETE {{baseUrl}}/friends/{{user6}}
+Content-Type: application/json
+Authorization: {{authorization}}
+
+// -------------------- Chat --------------------------- //
+### Craete_chat
+POST {{baseUrl}}/chats
+Content-Type: application/json
+Authorization: {{authorization}}
+
+{
+  "friend_id" : "{{user6}}"
+}
+
+### List chats
+GET {{baseUrl}}/chats
+Content-Type: application/json
+Authorization: {{authorization}}
+
+### detailsChatById -- ver diferencias entre chat 1 v 1 y grupal
+GET {{baseUrl}}/chats/{{chat_id}}
+Content-Type: application/json
+Authorization: {{authorization}}
+
+### sendMessage
+POST {{baseUrl}}/chats/{{chat_id}}/messages
+Content-Type: application/json
+Authorization: {{authorization}}
+
+{
+  "content": "This is a message in chat"
+}
+
+### getAllMessages
+GET {{baseUrl}}/chats/{{chat_id}}/messages
+Content-Type: application/json
+Authorization: {{authorization}}
+
+// -------------------- Grupos ------------------------- //
+### createGroup
+POST {{baseUrl}}/groups HTTP/1.1
+Content-Type: application/json
+Authorization: {{authorization}}
+
+{
+  "name": "MATH PUBLIC",
+  "description": "Description",
+  "is_public": true,
+  "sql" : "DROP TABLE users"
+}
+
+### getAllGroups
+GET {{baseUrl}}/groups HTTP/1.1
+Content-Type: application/json
+Authorization: {{authorization}}
+
+### getGroupById
+GET {{baseUrl}}/groups/{{group_id}} HTTP/1.1
+Content-Type: application/json
+Authorization: {{authorization}}
+
+### updateGroup
+PATCH  {{baseUrl}}/groups/{{group_id}} HTTP/1.1
+Content-Type: application/json
+Authorization: {{authorization}}
+
+{
+  "name": "elinia Update ",
+  "description": "New description"
+}
+
+### deleteGroup
+DELETE  {{baseUrl}}/groups/{{group_id}} HTTP/1.1
+Content-Type: application/json
+Authorization: {{authorization}}
+
+// -------------------- Grupos Members ----------------- //
+
+### addMembers
+POST {{baseUrl}}/groups/{{group_id}}/members HTTP/1.1
+Content-Type: application/json
+Authorization: {{authorization}}
+
+{
+  "users_ids": [
+    "IMPOSTOR",
+    "{{user1}}",
+    "{{user2}}",
+    "{{user3}}",
+    "{{user4}}",
+    "{{user5}}" 
+  ]
+}
+
+### deleteMember
+DELETE  {{baseUrl}}/groups/{{group_id}}/members/{{user3}} HTTP/1.1
+Content-Type: application/json
+Authorization: {{authorization}}
+
+### deleteAllMembers
+DELETE  {{baseUrl}}/groups/{{group_id}}/members/all HTTP/1.1
+Content-Type: application/json
+Authorization: {{authorization}}
+
+// -------------------- Grupos Moderatos --------------- //
+
+### assigmentModerators
+POST {{baseUrl}}/groups/{{group_id}}/moderators HTTP/1.1
+Content-Type: application/json
+Authorization: {{authorization}}
+
+{
+  "users_ids": [
+    "{{user1}}" ,
+    "{{user5}}",
+    "{{user4}}" ,
+    "Importor"
+  ]
+}
+### deleteModerator
+DELETE  {{baseUrl}}/groups/{{group_id}}/moderators/{{user4}} HTTP/1.1
+Content-Type: application/json
+Authorization: {{authorization}}
+
+### deleteAllModerators
+DELETE  {{baseUrl}}/groups/{{group_id}}/moderators/all HTTP/1.1
+Content-Type: application/json
+Authorization: {{authorization}}
+
+// ---------------------------- Group Chats 
+
+### Createchat
+POST {{baseUrl}}/groups/{{group_id}}/chats HTTP/1.1
+Content-Type: application/json
+Authorization: {{authorization}}
+
+{
+  "name" : "Chat Conectado",
+  "chat_users" : [ 
+    "{{user1}}",
+    "{{user3}}",
+    "{{user4}}",
+    "Impostor"
+  ]
+}
+
+### Get Chats in Group
+GET {{baseUrl}}/groups/{{group_id}}/chats HTTP/1.1
+Content-Type: application/json
+Authorization: {{authorization}}
+
+### Get Chat Details in Group
+GET {{baseUrl}}/groups/{{group_id}}/chats/{{chat_id}} HTTP/1.1
+Content-Type: application/json
+Authorization: {{authorization}}
+
+### Update Chat in Group
+PATCH {{baseUrl}}/groups/{{group_id}}/chats/{{chat_id}} HTTP/1.1
+Content-Type: application/json
+Authorization: {{authorization}}
+
+{
+  "name": "NuevoNombreDelChat",
+  "chat_users": ["{{user1}}", "{{user2}}", "impostor", "{{user4}}" , "{{user5}}"]
+}
+
+### Delete 
+
+DELETE {{baseUrl}}/groups/{{group_id}}/chats/{{chat_id}} HTTP/1.1
+Content-Type: application/json
+Authorization: {{authorization}}
+
+// -------------------- Get Users Info Public --------------- //
+
+### Get all users 
+
+GET {{baseUrl}}/users
+      ?nickname=r
+
+// -------------------- Join -------------------------------- //
+
+### Get group
+POST {{baseUrl}}/join/group
+Content-Type: application/json
+Authorization: {{authorization}}
+
+{
+  "group_id": "{{group_id}}"
+}
