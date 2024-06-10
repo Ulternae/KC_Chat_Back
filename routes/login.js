@@ -6,6 +6,7 @@ const CreateLoginRoute = ({ loginModel }) => {
   const controller = new LoginController({ loginModel })
 
   router.post('/', controller.login)
+  router.post('/google', controller.loginWithGoogle)
 
   return router
 }

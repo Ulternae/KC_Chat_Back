@@ -19,7 +19,7 @@ class ProfileController {
     const result = partialValidateUser(req.body)
 
     if (!result.success) {
-      res.status(422).json({ error: JSON.parse(result.error.message)})
+      return res.status(422).json({ error: JSON.parse(result.error.message)})
     }
 
     try {

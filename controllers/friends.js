@@ -9,7 +9,7 @@ class FriendController {
     const result = validateSendRequest(req.body);
 
     if (!result.success) {
-      res.status(422).json({ error: JSON.parse(result.error.message) });
+      return res.status(422).json({ error: JSON.parse(result.error.message) });
     }
 
     const friend_id = result.data.friend_id;

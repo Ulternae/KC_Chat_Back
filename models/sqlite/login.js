@@ -1,74 +1,83 @@
-import dotenv from 'dotenv'
+import dotenv from "dotenv";
 import { createClient } from "@libsql/client";
-import { validPassword } from '../../utils/bcrypt.js';
-import { generateToken } from '../../utils/jwt.js';
+import { validPassword } from "../../utils/bcrypt.js";
+import { generateToken } from "../../utils/jwt.js";
 
-dotenv.config()
+dotenv.config();
 
 const client = createClient({
   url: process.env.TURSO_DATABASE_URL,
   authToken: process.env.TURSO_AUTH_TOKEN
-})
+});
 
 class LoginModel {
   static async login({ input }) {
-    const nickname = input.nickname.toLowerCase()
-    const email = input.email.toLowerCase()
-    const password = input.password
+    const username = input.username.toLowerCase();
+    const email = input.email.toLowerCase();
+    const password = input.password;
 
+    const dataUser = {
+      username, email, password
+    }
     const response = await client.execute({
-      sql: `SELECT nickname, email, password, user_id 
+      sql: `SELECT username, email, password, user_id 
             FROM users 
-            WHERE LOWER(nickname) = ? OR 
+            WHERE LOWER(username) = ? OR 
             LOWER(email) = ? LIMIT 1`,
-      args: [nickname , email]
-    })
-
+      args: [username, email],
+    });
 
     if (response.rows.length === 0) {
       throw {
         status: 400,
-        error: 'The username or password is incorrect',
-        type: 'Invalid_Credentials',
-        field: 'nickname , email'
-      }
+        error: "This user no exist",
+        type: "invalidCredentials",
+        field: "username, email",
+        dataUser
+      };
     }
 
-    const user = response.rows[0]
+    const user = response.rows[0];
 
-    if (user.nickname.toLowerCase() !== nickname) {
+    if (user.username.toLowerCase() !== username) {
       throw {
         status: 400,
-        error: 'The username does not match',
-        type: 'Wrong_Nickname',
-        field: 'nickname'
+        error: "The username does not match",
+        type: "wrongNickname",
+        field: "username",
+        dataUser
       };
     }
 
     if (user.email.toLowerCase() !== email) {
       throw {
         status: 400,
-        error: 'The email does not match',
-        type: 'Wrong_Email',
-        field: 'email'
+        error: "The email does not match",
+        type: "wrongEmail",
+        field: "email",
+        dataUser
       };
     }
 
-    const isValidPassword = await validPassword({ db_password: user.password, password})
-    
+    const isValidPassword = await validPassword({
+      db_password: user.password,
+      password,
+    });
+
     if (!isValidPassword) {
-            throw {
+      throw {
         status: 400,
-        error: 'The password is incorrect',
-        type: 'Wrong_Password',
-        field: 'password'
+        error: "The password is incorrect",
+        type: "wrongPassword",
+        field: "password",
+        dataUser
       };
     }
 
-    const token = generateToken({ nickname, email, id: user.user_id })
+    const token = generateToken({ username, email, id: user.user_id });
 
-    return { token }
+    return { token };
   }
 }
 
-export { LoginModel }
+export { LoginModel };

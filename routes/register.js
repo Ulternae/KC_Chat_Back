@@ -6,6 +6,7 @@ const CreateRegisterRoute = ({ registerModel }) => {
   const controller = new RegisterController({ registerModel })
 
   router.post('/', controller.create)
+  router.post('/google', controller.createWithGoogle)
 
   return router
 }

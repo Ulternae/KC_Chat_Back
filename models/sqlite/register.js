@@ -36,17 +36,10 @@ class RegisterModel {
           throw {
             status: 400,
             error: `The ${field} is already in use. Please select another.`,
-            type: 'Field_In_Use',
-            field
+            type: `${field}InUse`,
+            field 
           };
         }
-
-        throw {
-          status: 400,
-          error: "Database constraint violation.",
-          type: 'Constraint_Violation',
-          details: error.message
-        };
       }
       throw {
         status: 500,

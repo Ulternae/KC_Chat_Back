@@ -1,4 +1,4 @@
-@authorization = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaWNrbmFtZSI6InVsdGVybmFlIiwiaWQiOiI4ODJhNjVkYy0wNzAzLTQ2MjctYjYyMi1hNTBjZDRlNzk5Y2UiLCJlbWFpbCI6InVsdGVybmFlQGdtYWlsLmNvbSIsImlhdCI6MTcxNzYwMzg0NCwiZXhwIjoxNzE3NjA3NDQ0fQ.edmW-ukzccMtqHpZnUkn0gSmXNPKRaUdFroAsBuTbng
+@authorization = Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJuaWNrbmFtZSI6InVsdGlzYWVyIHJldnRlcm5hZSIsImlkIjoiOTE1NjRkZmMtNjBiOS00YjY0LTgzNjQtMmIzN2MwMTNlZDg4IiwiZW1haWwiOiJ1bHRpc2Flci5yZXZ0ZXJuYWVAZ21haWwuY29tIiwiaWF0IjoxNzE3NzMwNTI2LCJleHAiOjE3MTc3MzQxMjZ9.z73U32zdZp84iUrTOcuQOHyKCYN_SmDzXU2M-hJkjvY
 @baseUrl = http://localhost:3000
 
 @user1 = 882a65dc-0703-4627-b622-a50cd4e799ce
@@ -13,9 +13,9 @@
 @moderator_id = e0febc03-18f3-4ad3-ba88-2266fc3c3a51
 @chat_id = 48b3eccc-5c0f-455c-ae13-0dc7fc798f25
 
-@username = 'Ultisaer'
+@username = Ultisaer123
 @password = 123456
-@email = 'Ultisaer@gmail.com'
+@email = Ultisaer123@gmail.com
 @nickname = 'Ultis'
 
 @urlAvatar = 'https://route.com
@@ -30,7 +30,17 @@ Authorization: {{authorization}}
 // -------------------- Register ----------------------- //
 
 ### Register
-POST {{baseUrl}}/register
+POST {{baseUrl}}/register  HTTP/1.1
+Content-Type: application/json
+
+{
+  "password": "{{password}}",
+  "email": "{{email}}",
+  "nickname": "{{nickname}}"
+}
+
+### Register google
+POST {{baseUrl}}/register/google
 Content-Type: application/json
 
 {

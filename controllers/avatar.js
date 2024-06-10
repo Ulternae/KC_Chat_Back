@@ -24,7 +24,7 @@ class AvatarController {
     const result = validateGetAvatarId(req.params)
 
     if (!result.success) {
-      res.status(422).json({ error: JSON.parse(result.error.message) });
+      return res.status(422).json({ error: JSON.parse(result.error.message) });
     }
 
     try {
@@ -42,7 +42,7 @@ class AvatarController {
     const result = validateCreateAvatar(req.body)
 
     if (!result.success) {
-      res.status(422).json({ error: JSON.parse(result.error.message) });
+      return res.status(422).json({ error: JSON.parse(result.error.message) });
     }
     
     try {

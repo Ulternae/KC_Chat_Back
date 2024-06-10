@@ -1,5 +1,6 @@
 import express from "express";
 import dotenv from "dotenv";
+import cors from 'cors'
 
 import { CreateGroupRoute } from "./routes/groups.js";
 import { CreateLoginRoute } from "./routes/login.js";
@@ -30,10 +31,11 @@ const createApp = ({
   const PORT = process.env.PORT ?? 3001;
   const acceptedOrigins = process.env.ACCEPTED_ORIGINS.split(",");
   const app = express();
-
+  
+  app.use(cors())
   app.disable("x-powered-by");
   app.use(express.json());
-  app.use(corsMiddleware({ acceptedOrigins }));
+  // app.use(corsMiddleware({ acceptedOrigins }));
 
   app.use("/register", CreateRegisterRoute({ registerModel })); /////////
   app.use("/login", CreateLoginRoute({ loginModel })); //////////////////
@@ -44,8 +46,7 @@ const createApp = ({
   app.use("/groups", CreateGroupRoute({ groupModel })); /////////////////
   app.use("/groups", CreateGroupChatRouter({ groupChatModel })) /////////
   app.use("/users", CreateUsersRoute({ userModel })); ///////////////////
-  
-  app.use("/join", CreateJoinRouter({ joinModel }))
+  app.use("/join", CreateJoinRouter({ joinModel })); ////////////////////
 
   app.listen(PORT, () => {
     console.log(`Server is listening at http://localhost:${PORT}`);

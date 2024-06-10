@@ -9,7 +9,7 @@ class GroupChatController {
     const response = validateGroupChat(req.body)
     
     if (!response.success) {
-      res.status(422).json({ error: JSON.parse(response.error.message) });
+      return res.status(422).json({ error: JSON.parse(response.error.message) });
     }
     try {
       const data = await this.groupChatModel.createChatInGroup({ user_id : req.user.id , group_id: req.params.group_id, input: response.data });
@@ -47,7 +47,7 @@ class GroupChatController {
   updateChatInGroup = async (req, res) => {
     const response = partialValidateGroupChat(req.body)
     if (!response.success) {
-      res.status(422).json({ error: JSON.parse(response.error.message) });
+      return res.status(422).json({ error: JSON.parse(response.error.message) });
     }
 
     try {
