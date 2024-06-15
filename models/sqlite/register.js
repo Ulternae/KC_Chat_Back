@@ -44,7 +44,7 @@ class RegisterModel {
       throw {
         status: 500,
         error: "There was an error in the database.",
-        type: 'Database_Error',
+        type: 'databaseError',
         details: error
       };
     }

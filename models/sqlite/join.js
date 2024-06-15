@@ -12,7 +12,7 @@ const errorDatabase = ({ error }) => {
   return {
     status: 500,
     error: "Error in the database",
-    type: "Database_error",
+    type: "databaseError",
     field: "groups",
     details: error.message,
   };

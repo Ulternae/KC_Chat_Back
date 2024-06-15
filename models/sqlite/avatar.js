@@ -21,7 +21,7 @@ class AvatarModel {
       throw {
         status: 500,
         error: 'An error occurred while fetching avatars from the database.',
-        type: 'Database_error',
+        type: 'databaseError',
         field: 'Avatars',
         details: error
       };
@@ -53,7 +53,7 @@ class AvatarModel {
       throw {
         status: 500,
         error: 'An error occurred while fetching avatars from the database.',
-        type: 'Database_error',
+        type: 'databaseError',
         field: 'Avatars',
         details: error
       };
