@@ -54,7 +54,7 @@ class FriendModel {
         throw {
           status: 500,
           error: "An error occurred while creating the friend request",
-          type: "Database_error",
+          type: "databaseError",
           field: "Friends",
           details: error,
         };
@@ -93,7 +93,7 @@ class FriendModel {
       throw {
         status: 500,
         error: "An error occurred while creating the friend request",
-        type: "Database_error",
+        type: "databaseError",
         field: "Friends",
         details: error,
       };
@@ -115,7 +115,7 @@ class FriendModel {
       throw {
         status: 500,
         error: "There was an error getting your friend request requests.",
-        type: "Database_error",
+        type: "databaseError",
         field: "Friends",
         details: error,
       };
@@ -161,7 +161,7 @@ class FriendModel {
       throw {
         status: 500,
         error: "There was an error fetching the friend request.",
-        type: "Database_error",
+        type: "databaseError",
         field: "friends",
         details: error,
       };
@@ -201,7 +201,7 @@ class FriendModel {
       throw {
         status: 500,
         error: "There was an error updating the friend request status.",
-        type: "Database_error",
+        type: "databaseError",
         field: "friends",
         details: error,
       };
@@ -247,7 +247,7 @@ class FriendModel {
       throw {
         status: 500,
         error: "There was an error fetching the friend request.",
-        type: "Database_error",
+        type: "databaseError",
         field: "friends",
         details: error,
       };
@@ -277,7 +277,7 @@ class FriendModel {
       throw {
         status: 500,
         error: "There was an error deleting the friend request.",
-        type: "Database_error",
+        type: "databaseError",
         field: "friends",
         details: error,
       };

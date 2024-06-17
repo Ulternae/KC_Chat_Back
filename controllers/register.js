@@ -12,9 +12,9 @@ class RegisterController {
   }
 
   create = async (req, res) => {
-    const nickname = req.body.nickname || req.body.username
+    const username = req.body.username || req.body.nickname
     const avatar_id = req.body.avatar_id || 1
-    const result = validateRegister({...req.body, nickname, avatar_id});
+    const result = validateRegister({...req.body, username, avatar_id});
 
     if (!result.success) {
       return res.status(422).json({ error: JSON.parse(result.error.message) });

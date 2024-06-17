@@ -153,7 +153,7 @@ class GroupModel {
       throw {
         status: 500,
         error: "There was an error creating the group",
-        type: "Database_error",
+        type: "databaseError",
         field: "groups",
         details: error.message,
       };
@@ -187,7 +187,7 @@ class GroupModel {
       throw {
         status: 500,
         error: "There was an error fetching groups",
-        type: "Database_error",
+        type: "databaseError",
         field: "groups",
         details: error.message,
       };
@@ -233,7 +233,7 @@ class GroupModel {
       throw {
         status: 500,
         error: "Failed update group",
-        type: "Database_error",
+        type: "databaseError",
         field: "groups",
         details: error.message,
       };
@@ -321,7 +321,7 @@ class GroupModel {
       throw {
         status: 500,
         error: "Failed delete group",
-        type: "Database_error",
+        type: "databaseError",
         field: "groups, group_members, chats",
         details: error.message,
       };
@@ -354,7 +354,7 @@ class GroupModel {
       throw {
         status: 500,
         error: "Failed insert members of group",
-        type: "Database_error",
+        type: "databaseError",
         field: "group_members",
         details: error.message,
       };
@@ -394,7 +394,7 @@ class GroupModel {
       throw {
         status: 500,
         error: "There was an insert members in group",
-        type: "Database_error",
+        type: "databaseError",
         field: "group_members",
         details: error.message,
       };
@@ -432,7 +432,7 @@ class GroupModel {
       throw {
         status: 500,
         error: "There was an error a delete a member",
-        type: "Database_error",
+        type: "databaseError",
         field: "groups",
         details: error.message,
       };
@@ -458,7 +458,7 @@ class GroupModel {
       throw {
         status: 500,
         error: "There was an error a delete a member",
-        type: "Database_error",
+        type: "databaseError",
         field: "groups",
         details: error.message,
       };
@@ -493,7 +493,7 @@ class GroupModel {
       throw {
         status: 500,
         error: "There was feching moderators",
-        type: "Database_error",
+        type: "databaseError",
         field: "group_members",
         details: error.message,
       };
@@ -546,7 +546,7 @@ class GroupModel {
         throw {
           status: 500,
           error: "There was update moderators",
-          type: "Database_error",
+          type: "databaseError",
           field: "group_members",
           details: error.message,
         };
@@ -569,7 +569,7 @@ class GroupModel {
         throw {
           status: 500,
           error: "There was create moderators",
-          type: "Database_error",
+          type: "databaseError",
           field: "group_members",
           details: error.message,
         };
@@ -595,7 +595,7 @@ class GroupModel {
       throw {
         status: 500,
         error: "There was error an deleter a member in group",
-        type: "Database_error",
+        type: "databaseError",
         field: "group_members",
         details: error.message,
       };
@@ -622,7 +622,7 @@ class GroupModel {
       throw {
         status: 500,
         error: "There was error an deleter all members in group",
-        type: "Database_error",
+        type: "databaseError",
         field: "group_members",
         details: error.message,
       };

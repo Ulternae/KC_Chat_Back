@@ -26,7 +26,7 @@ class ChatModel {
       throw {
         status: 500,
         error: "There was an error fetching the user.",
-        type: "Database_error",
+        type: "databaseError",
         field: "users",
         details: error.message,
       };
@@ -65,7 +65,7 @@ class ChatModel {
       throw {
         status: 500,
         error: "There was an error checking existing chats.",
-        type: "Database_error",
+        type: "databaseError",
         field: "chat_users",
         details: error.message,
       };
@@ -94,7 +94,7 @@ class ChatModel {
         throw {
           status: 500,
           error: "There was an error creating the chat.",
-          type: "Database_error",
+          type: "databaseError",
           field: "chats",
           details: error.message,
         };
@@ -114,7 +114,7 @@ class ChatModel {
         throw {
           status: 500,
           error: "There was an error adding users to the chat.",
-          type: "Database_error",
+          type: "databaseError",
           field: "chat_users",
           details: error.message,
         };
@@ -125,7 +125,7 @@ class ChatModel {
       throw {
         status: 500,
         error: "There was an error adding users to the chat.",
-        type: "Database_error",
+        type: "databaseError",
         field: "chat_users",
         details: error.message,
       };
@@ -171,7 +171,7 @@ class ChatModel {
         throw {
           status: 500,
           error: "Error fetching chat details",
-          type: "Database_error",
+          type: "databaseError",
           field: "chat_id",
           details: error.message,
         };
@@ -210,7 +210,7 @@ class ChatModel {
       throw {
         status: 500,
         error: "There was an error fetching the chats",
-        type: "Database_error",
+        type: "databaseError",
         field: "chats",
         details: error.message,
       };
@@ -234,7 +234,7 @@ class ChatModel {
       throw {
         status: 500,
         error: "Error fetching chat information",
-        type: "Database_Error",
+        type: "databaseError",
         field: "chat_id",
         details: error.message,
       };
@@ -260,7 +260,7 @@ class ChatModel {
         throw {
           status: 500,
           error: "Failed to send message",
-          type: "Database_Error",
+          type: "databaseError",
           field: "message",
           details: "No rows were affected by the insert operation",
         };
@@ -269,7 +269,7 @@ class ChatModel {
       throw {
         status: 500,
         error: "Error sending message",
-        type: "Database_Error",
+        type: "databaseError",
         field: "message",
         details: error.message || "Failed to insert message into database",
       };
@@ -295,7 +295,7 @@ class ChatModel {
       throw {
         status: 500,
         error: "Error fetching chat information",
-        type: "Database_Error",
+        type: "databaseError",
         field: "chat_id",
         details: error.message,
       };
@@ -337,7 +337,7 @@ class ChatModel {
       throw {
         status: 500,
         error: "Error fetching messages",
-        type: "Database_Error",
+        type: "databaseError",
         field: "chat_id",
         details: error.message,
       };
@@ -389,7 +389,7 @@ class ChatModel {
       throw {
         status: 500,
         error: "Error fetching chat information",
-        type: "Database_Error",
+        type: "databaseError",
         field: "chat_id",
         details: error.message,
       };
@@ -423,7 +423,7 @@ class ChatModel {
       throw {
         status: 500,
         error: "Error fetching chat details",
-        type: "Database_error",
+        type: "databaseError",
         field: "chat_id",
         details: error.message,
       };

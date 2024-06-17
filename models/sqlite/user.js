@@ -1,5 +1,6 @@
 import dotenv from "dotenv";
 import { createClient } from "@libsql/client";
+import { validPassword } from "../../utils/bcrypt.js";
 
 dotenv.config();
 
@@ -12,7 +13,7 @@ const errorDatabase = ({ error }) => {
   return {
     status: 500,
     error: "Error in the database",
-    type: "Database_error",
+    type: "databaseError",
     field: "users",
     details: error.message,
   };
@@ -43,6 +44,62 @@ class UserModel {
     }
 
     return { users: users.rows };
+  }
+
+  static async validatePasswordUser({ user, password }) {
+    const user_id = user.id
+
+    let userDatabase
+    try {
+      userDatabase = await client.execute({
+        sql: `SELECT 
+                password,
+                user_id,
+                nickname
+              FROM users
+              WHERE user_id = ?`,
+        args: [user_id]
+      })
+    } catch (error) {
+      throw errorDatabase({ error })
+    }
+
+    if (userDatabase.rows[0].length === 0) {
+      throw {
+        status: 400,
+        error: "This user no exist",
+        type: "userNotFound",
+        field: "user_id",
+        details: "This user is possible have been deleted  in the database may while logged in, user not found"
+      };
+    }
+
+    const isValidPassword = await validPassword({ password, db_password: userDatabase.rows[0].password })
+    return { isValidPassword }
+  }
+
+  static async validatePasswordUserGoogle({ user, idUserGoogle, userData }) {
+    if (user.id === idUserGoogle) {
+      return { isValidPassword: true }
+    }
+
+    if (user.nickname === userData.nickname
+      || user.nickname === userData.username
+      || user.email === userData.email) {
+      return { isValidPassword: true }
+
+    }
+
+    if (user.id !== idUserGoogle) {
+      throw {
+        status: 400,
+        error: "This auth not corresponding of user loged",
+        type: "authWrongWithGoogle",
+        field: "googleCredential",
+        details: "This auth not corresponding of user logged, try login or auth again with account that you desired edit"
+      };
+    }
+
   }
 }
 

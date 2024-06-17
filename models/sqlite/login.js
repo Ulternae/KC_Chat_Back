@@ -12,20 +12,20 @@ const client = createClient({
 
 class LoginModel {
   static async login({ input }) {
-    const username = input.username.toLowerCase();
+    const nickname = input.nickname.toLowerCase();
     const email = input.email.toLowerCase();
     const password = input.password;
 
     const dataUser = {
-      username, email, password
+      nickname, email, password
     }
 
     const response = await client.execute({
-      sql: `SELECT username, email, password, user_id 
+      sql: `SELECT nickname, email, password, user_id 
             FROM users 
-            WHERE LOWER(username) = ? OR 
+            WHERE LOWER(nickname) = ? OR 
             LOWER(email) = ? LIMIT 1`,
-      args: [username, email],
+      args: [nickname, email],
     });
 
     if (response.rows.length === 0) {
@@ -33,19 +33,19 @@ class LoginModel {
         status: 400,
         error: "This user no exist",
         type: "invalidCredentials",
-        field: "username, email",
+        field: "nickname, email",
         dataUser
       };
     }
 
     const user = response.rows[0];
 
-    if (user.username.toLowerCase() !== username) {
+    if (user.nickname.toLowerCase() !== nickname) {
       throw {
         status: 400,
-        error: "The username does not match",
+        error: "The nickname does not match",
         type: "wrongNickname",
-        field: "username",
+        field: "nickname",
         dataUser
       };
     }
@@ -75,7 +75,7 @@ class LoginModel {
       };
     }
 
-    const token = generateToken({ username, email, id: user.user_id });
+    const token = generateToken({ nickname, email, id: user.user_id });
 
     return { token };
   }

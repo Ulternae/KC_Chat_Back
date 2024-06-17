@@ -1,4 +1,4 @@
-import z from "zod"
+import z, { object } from "zod"
 
 const userSchema = z.object({
   username: z.string().min(3, "Username must be at least 3 characters long") ,
@@ -8,8 +8,16 @@ const userSchema = z.object({
   avatar_id: z.number()
 })
 
+const userPasswordSchema = z.object({
+  password: z.string()
+})
+
 const partialValidateUser = (object) => {
   return userSchema.partial().safeParse(object)
 }
 
-export { partialValidateUser , userSchema}
+const validateUserPassword = (object) => {
+  return userPasswordSchema.safeParse(object)
+}
+
+export { partialValidateUser , userSchema, validateUserPassword}
