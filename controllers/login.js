@@ -31,7 +31,7 @@ class LoginController {
 
   loginWithGoogle = async (req, res) => {
     const { token } = req.body;
-
+    
     if (!token) {
       return res.status(422).json({ error: 'You need a token Id for create account' });
     }
@@ -44,7 +44,7 @@ class LoginController {
     const payload = ticket.getPayload();
 
     const userData = {
-      username: payload.name,
+      nickname: payload.name,
       email: payload.email,
       password: payload.sub
     }

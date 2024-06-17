@@ -31,7 +31,7 @@ class AvatarModel {
       throw {
         status: 400,
         error: 'The avatars were not found in the database.',
-        type: 'Avatars_not_found',
+        type: 'avatarsNotFound',
         field: 'Avatars'
       };
     }
