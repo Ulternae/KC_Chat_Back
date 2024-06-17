@@ -44,17 +44,18 @@ class LoginController {
     const payload = ticket.getPayload();
 
     const userData = {
-      username: payload.name,
-      email: payload.email,
-      password: payload.sub
+      id: payload.sub,
+      password: payload.sub,
+      token
     }
 
     try {
-      const data = await this.loginModel.login({
+      const data = await this.loginModel.loginWithGoogle({
         input: {...userData}
       });
       res.status(200).json(data);
     } catch (error) {
+      console.log(error)
       return res
         .status(error.status)
         .json({ error: error.error, type: error.type, field: error.field, details: error.details, dataUser: error.dataUser});

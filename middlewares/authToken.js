@@ -10,7 +10,7 @@ const authToken = (req, res, next) => {
     req.user = decoded; // en la request se le manda los datos del usuario???
     next();
   } catch (error) {
-    res.status(403).json({ message: "Invalid token" , type: 'invalidToken'});
+    res.status(403).json({ message: "Session Expired" , type: 'sessionExpired'});
   }
 };
 

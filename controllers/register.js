@@ -58,8 +58,8 @@ class RegisterController {
     };
 
     try {
-      const data = await this.registerModel.create({
-        id: crypto.randomUUID(),
+      const data = await this.registerModel.createWithGoogle({
+        id: payload.sub,
         input: userData,
       });
 
@@ -72,8 +72,6 @@ class RegisterController {
         details: error.details,
       });
     }
-
-
   };
 }
 

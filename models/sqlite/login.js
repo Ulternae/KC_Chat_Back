@@ -19,6 +19,7 @@ class LoginModel {
     const dataUser = {
       username, email, password
     }
+
     const response = await client.execute({
       sql: `SELECT username, email, password, user_id 
             FROM users 
@@ -69,13 +70,56 @@ class LoginModel {
         status: 400,
         error: "The password is incorrect",
         type: "wrongPassword",
-        field: "password",
+        field: "password", 
         dataUser
       };
     }
 
     const token = generateToken({ username, email, id: user.user_id });
 
+    return { token };
+  }
+
+  static async loginWithGoogle({ input }) {
+    const { id, password } = input
+    const dataUser = { ...input }
+    const response = await client.execute({
+      sql: `SELECT username, email, password, user_id 
+            FROM users 
+            WHERE user_id = ?`,
+      args: [id],
+    });
+    console.log(response)
+  
+    if (response.rows.length === 0) {
+      throw {
+        status: 400,
+        error: "This user no exist",
+        type: "invalidCredentials",
+        field: "user_id",
+        dataUser
+      }; 
+    }
+
+    const user = response.rows[0];
+
+    console.log(user)
+    const isValidPassword = await validPassword({
+      db_password: user.password,
+      password,
+    });
+
+    if (!isValidPassword) {
+      throw {
+        status: 400,
+        error: "The password is incorrect",
+        type: "wrongPassword",
+        field: "password",
+        dataUser
+      };
+    }
+
+    const token = generateToken({ username: user.username, email: user.email, id: user.user_id });
     return { token };
   }
 }
