@@ -25,6 +25,16 @@ CREATE TABLE friends (
     FOREIGN KEY (friend_id) REFERENCES users(user_id)
 );
 
+
+-- Tabla de configurariones (usuarios) 
+CREATE TABLE settings (
+    setting_id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT,
+    language TEXT ,
+    theme TEXT ,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+)
+
 -- Tabla de chats
 CREATE TABLE chats (
     chat_id TEXT PRIMARY KEY,  -- UUID como texto

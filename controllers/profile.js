@@ -10,6 +10,7 @@ class ProfileController {
       const data = await this.profileModel.get({ user : req.user })
       res.json(data)
     } catch (error) {
+      console.log(error)
       res
         .status(error.status || 500)
         .json({ error: error.error, type: error.type, field: error.field, details: error.details});

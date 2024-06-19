@@ -10,22 +10,44 @@ const client = createClient({
   authToken: process.env.TURSO_AUTH_TOKEN,
 });
 
+const errorDatabase = ({ error }) => {
+  return {
+    status: 500,
+    error: "Error in the database",
+    type: "databaseError",
+    field: "groups",
+    details: error.message,
+  };
+};
+
 class RegisterModel {
-  static async create({ id, input }) {
+  static async create({ id, input, settings }) {
     const password = await encryptedPassword({ password: input.password });
     const { username, email, nickname, avatar_id } = input;
+    const { language, theme } = settings
     const token = generateToken({ id, nickname, email });
 
     try {
-      await client.execute({
+      const transaction = await client.transaction("write")
+
+      await transaction.execute({
         sql: `INSERT INTO users 
               (user_id, avatar_id, nickname, username, email, password) VALUES
               (?,?,?,?,?,?)`,
         args: [id, avatar_id, nickname, username, email, password],
       });
 
+      await transaction.execute({
+        sql: `INSERT INTO settings
+              (user_id, language, theme) VALUES
+              (?,?,?)`,
+        args: [id , language, theme ]
+      })
+
+      await transaction.commit();
+
       return {
-        data: { id, ...input },
+        data: { id, ...input, settings },
         message: "Successfully registered user",
         token,
       };
@@ -41,27 +63,36 @@ class RegisterModel {
           };
         }
       }
-      throw {
-        status: 500,
-        error: "There was an error in the database.",
-        type: 'databaseError',
-        details: error
-      };
+      await transaction.rollback();
+      throw errorDatabase({error})
+      
     }
   }
 
-  static async createWithGoogle({ id, input }) {
+  static async createWithGoogle({ id, input, settings }) {
     const password = await encryptedPassword({ password: input.password });
     const { username, email, nickname, avatar_id } = input;
+    const { language, theme } = settings
     const token = generateToken({ id, nickname, email });
 
     try {
-      await client.execute({
+      const transaction = await client.transaction("write")
+
+      await transaction.execute({
         sql: `INSERT INTO users 
               (user_id, avatar_id, nickname, username, email, password) VALUES
               (?,?,?,?,?,?)`,
         args: [id, avatar_id, nickname, username, email, password],
       });
+
+      await transaction.execute({
+        sql: `INSERT INTO settings
+              (user_id, language, theme) VALUES
+              (?,?,?)`,
+        args: [id , language, theme ]
+      })
+
+      await transaction.commit();
 
       return {
         data: { id, ...input },
@@ -80,12 +111,8 @@ class RegisterModel {
           };
         }
       }
-      throw {
-        status: 500,
-        error: "There was an error in the database.",
-        type: 'Database_Error',
-        details: error
-      };
+      await transaction.rollback();
+      throw errorDatabase({ error })
     }
   }
 }

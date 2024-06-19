@@ -6,8 +6,18 @@ dotenv.config();
 
 const client = createClient({
   url: process.env.TURSO_DATABASE_URL,
-  authToken: process.env.TURSO_AUTH_TOKEN
+  authToken: process.env.TURSO_AUTH_TOKEN,
 });
+
+const errorDatabase = ({ error }) => {
+  return {
+    status: 500,
+    error: "Error in the database",
+    type: "databaseError",
+    field: "profile",
+    details: error.message,
+  };
+};
 
 class ProfileModel {
   static async get({ user }) {
@@ -18,9 +28,12 @@ class ProfileModel {
         u.username ,
         u.email ,
         u.avatar_id,
-        a.url AS avatar_url
+        a.url AS avatar_url,
+        s.language,
+        s.theme
         FROM users AS u 
-        LEFT JOIN avatars AS a ON u.avatar_id = a.avatar_id
+        LEFT JOIN avatars AS a ON u.avatar_id = a.avatar_id 
+        LEFT JOIN settings AS s ON s.user_id = u.user_id
         WHERE u.user_id = ?`,
       args: [user.id],
     });
@@ -29,7 +42,7 @@ class ProfileModel {
       throw {
         status: 404,
         error: "User not found",
-        type: "Not_Found",
+        type: "userNotFound",
         field: "user_id",
       };
     }
@@ -40,13 +53,15 @@ class ProfileModel {
   static async update({ user, input }) {
     const { id } = user;
 
-    let inputData = input
+    let inputData = input;
     const entries = Object.entries(inputData);
-    
-    const hasPasswordInInput = entries.find((data) => data[0] === "password")
+
+    const hasPasswordInInput = entries.find((data) => data[0] === "password");
     if (hasPasswordInInput) {
-      const password = await encryptedPassword({ password: hasPasswordInInput[1]})
-      inputData = ({ ...input, password})
+      const password = await encryptedPassword({
+        password: hasPasswordInInput[1],
+      });
+      inputData = { ...input, password };
     }
 
     const updateFields = Object.keys(inputData)
@@ -55,37 +70,58 @@ class ProfileModel {
     const updateValues = Object.values(inputData);
 
     const avatar_id = entries.find((data) => data[0] === "avatar_id");
+    let verifyAvatar;
+    let updateData;
 
     if (avatar_id) {
-      const verifyAvatar = await client.execute({
-        sql: `SELECT url from avatars 
-              WHERE avatar_id = ?`,
-        args: [avatar_id[1]],
-      });
-
-      if (verifyAvatar.rows.length === 0) {
-        throw {
-          status: 400,
-          error: 'The avatar selected is not found',
-          type: 'Not_found_Avatar',
-          field: 'avatar_id'
-        }
+      try {
+        verifyAvatar = await client.execute({
+          sql: `SELECT url from avatars 
+                WHERE avatar_id = ?`,
+          args: [avatar_id[1]],
+        });
+      } catch (error) {
+        throw errorDatabase({ error });
       }
     }
 
-    const updateData = await client.execute({
-      sql: `UPDATE users
-            SET ${updateFields}
-            WHERE user_id = ?`,
-      args: [...updateValues, id],
-    });
+    if (verifyAvatar.rows.length === 0) {
+      throw {
+        status: 400,
+        error: "The avatar selected is not found",
+        type: "avatarNotFound",
+        field: "avatar_id",
+      };
+    }
+
+    try {
+      updateData = await client.execute({
+        sql: `UPDATE users
+              SET ${updateFields}
+              WHERE user_id = ?`,
+        args: [...updateValues, id],
+      });
+    } catch (error) {
+      if (error.code === "SQLITE_CONSTRAINT") {
+        if (error.message.includes("UNIQUE constraint failed")) {
+          const field = error.message.split(".").pop();
+          throw {
+            status: 400,
+            error: `The ${field} is already in use. Please select another.`,
+            type: `${field}InUse`,
+            field 
+          };
+        }
+      }
+      throw errorDatabase({ error });
+    }
 
     if (updateData.rowsAffected === 0) {
       throw {
         status: 400,
         error:
           "Update operation failed. No changes were made to the user profile.",
-        type: "Update_Failed",
+        type: "updatedFailed",
         field: "Update",
       };
     }
@@ -94,9 +130,9 @@ class ProfileModel {
 
     if (Object.keys(response).length === 0) {
       throw {
-        status: 500,
-        error: `User not found after update`,
-        type: "Not_Found_After_Update",
+        status: 404,
+        error: "User not found",
+        type: "userNotFound",
         field: "user_id",
       };
     }

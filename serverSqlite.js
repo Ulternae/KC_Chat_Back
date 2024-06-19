@@ -10,6 +10,8 @@ import { LoginModel } from "./models/sqlite/login.js";
 import { FriendModel } from "./models/sqlite/friend.js";
 import { GroupChatModel } from "./models/sqlite/groupChat.js";
 import { JoinModel } from "./models/sqlite/join.js";
+import { SettingsModel } from "./models/sqlite/settings.js";
+
 
 createApp({ 
   groupModel: GroupModel, 
@@ -21,5 +23,6 @@ createApp({
   chatModel: ChatModel,
   friendModel: FriendModel,
   groupChatModel: GroupChatModel,
-  joinModel: JoinModel
+  joinModel: JoinModel,
+  settingsModel: SettingsModel
 });

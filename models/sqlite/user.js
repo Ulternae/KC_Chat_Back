@@ -80,14 +80,13 @@ class UserModel {
 
   static async validatePasswordUserGoogle({ user, idUserGoogle, userData }) {
     if (user.id === idUserGoogle) {
-      return { isValidPassword: true }
+      return { isValidPassword: true, passwordUser: idUserGoogle }
     }
 
     if (user.nickname === userData.nickname
       || user.nickname === userData.username
       || user.email === userData.email) {
-      return { isValidPassword: true }
-
+      return { isValidPassword: true, passwordUser: ''  }
     }
 
     if (user.id !== idUserGoogle) {
@@ -99,7 +98,6 @@ class UserModel {
         details: "This auth not corresponding of user logged, try login or auth again with account that you desired edit"
       };
     }
-
   }
 }
 

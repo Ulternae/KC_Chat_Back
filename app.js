@@ -11,8 +11,9 @@ import { CreateAvatarsRoute } from "./routes/avatar.js";
 import { CreateProfileRoute } from "./routes/profile.js";
 import { corsMiddleware } from "./middlewares/cors.js";
 import { CreateFriendsRoute } from "./routes/friends.js";
-import { CreateGroupChatRouter } from "./routes/groupChats.js";
-import { CreateJoinRouter } from "./routes/join.js";
+import { CreateGroupChatRoute } from "./routes/groupChats.js";
+import { CreateJoinRoute } from "./routes/join.js";
+import { CreateSettingsRoute } from './routes/settings.js'
 
 dotenv.config();
 
@@ -26,7 +27,8 @@ const createApp = ({
   chatModel,
   friendModel,
   groupChatModel,
-  joinModel
+  joinModel,
+  settingsModel
 }) => {
   const PORT = process.env.PORT ?? 3001;
   const acceptedOrigins = process.env.ACCEPTED_ORIGINS.split(",");
@@ -44,9 +46,10 @@ const createApp = ({
   app.use("/friends", CreateFriendsRoute({ friendModel })); /////////////
   app.use("/chats", CreateChatsRoute({ chatModel })); ///////////////////
   app.use("/groups", CreateGroupRoute({ groupModel })); /////////////////
-  app.use("/groups", CreateGroupChatRouter({ groupChatModel })) /////////
+  app.use("/groups", CreateGroupChatRoute({ groupChatModel })) /////////
   app.use("/users", CreateUsersRoute({ userModel })); ///////////////////
-  app.use("/join", CreateJoinRouter({ joinModel })); ////////////////////
+  app.use("/join", CreateJoinRoute({ joinModel })); ////////////////////
+  app.use("/settings", CreateSettingsRoute({ settingsModel }))
 
   app.listen(PORT, () => {
     console.log(`Server is listening at http://localhost:${PORT}`);

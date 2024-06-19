@@ -44,6 +44,8 @@ class LoginController {
     const payload = ticket.getPayload();
 
     const userData = {
+      username: payload.name,
+      email: payload.email,
       id: payload.sub,
       password: payload.sub,
       token
@@ -55,7 +57,6 @@ class LoginController {
       });
       res.status(200).json(data);
     } catch (error) {
-      console.log(error)
       return res
         .status(error.status)
         .json({ error: error.error, type: error.type, field: error.field, details: error.details, dataUser: error.dataUser});

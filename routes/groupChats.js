@@ -2,7 +2,7 @@ import { Router } from "express";
 import { GroupChatController } from "../controllers/groupChat.js";
 import { authToken } from "../middlewares/authToken.js";
 
-const CreateGroupChatRouter = ({ groupChatModel }) => {
+const CreateGroupChatRoute = ({ groupChatModel }) => {
   const router = Router();
   const controller = new GroupChatController({ groupChatModel });
 
@@ -16,4 +16,4 @@ const CreateGroupChatRouter = ({ groupChatModel }) => {
 
 };
 
-export { CreateGroupChatRouter }
+export { CreateGroupChatRoute }
