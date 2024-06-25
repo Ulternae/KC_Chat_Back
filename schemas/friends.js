@@ -1,7 +1,7 @@
 import z from "zod"
 
 const sendRequestSchema = z.object({
-  friend_id: z.string().uuid()
+  friend_id: z.string()
 })
 
 const validateSendRequest = (object) => {

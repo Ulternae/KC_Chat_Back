@@ -86,9 +86,7 @@ class LoginModel {
     const response = await client.execute({
       sql: `SELECT username, email, password, user_id 
             FROM users 
-            WHERE user_id = ?
-              OR nickname = ?
-              OR email = ?
+            WHERE (user_id = ? OR (nickname = ? AND email = ?));
             `,
       args: [id, username, email],
     });

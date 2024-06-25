@@ -70,8 +70,8 @@ class RegisterModel {
   }
 
   static async createWithGoogle({ id, input, settings }) {
-    const password = await encryptedPassword({ password: input.password });
-    const { username, email, nickname, avatar_id } = input;
+    let password = await encryptedPassword({ password: input.password });
+    let { username, email, nickname, avatar_id } = input;
     const { language, theme } = settings
     const token = generateToken({ id, nickname, email });
 
@@ -103,14 +103,25 @@ class RegisterModel {
       if (error.code === "SQLITE_CONSTRAINT") {
         if (error.message.includes("UNIQUE constraint failed")) {
           const field = error.message.split(".").pop();
-          throw {
-            status: 400,
-            error: `The ${field} is already in use. Please select another.`,
-            type: `${field}InUse`,
-            field 
-          };
+
+          if (field === 'nickname') {
+            nickname = input.nickname.concat('-', parseInt(Math.random() * 2000))
+            password = input.password
+            const newInput = {username, email, nickname, avatar_id, password}
+
+            return this.create({ id, settings, input: newInput})
+          } else {
+            throw {
+              status: 400,
+              error: `The ${field} is already in use. Please select another.`,
+              type: `${field}InUse`,
+              field
+            };
+          }
+
         }
       }
+
       await transaction.rollback();
       throw errorDatabase({ error })
     }

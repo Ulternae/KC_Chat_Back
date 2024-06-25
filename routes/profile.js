@@ -7,7 +7,8 @@ const CreateProfileRoute = ({ profileModel }) => {
   const controller = new ProfileController({ profileModel })
 
   router.get('/', authToken, controller.get);
-  router.patch('/', authToken, controller.update )
+  router.patch('/', authToken, controller.update)
+  router.delete('/', authToken, controller.delete)
 
   return router
 }

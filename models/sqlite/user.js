@@ -75,21 +75,53 @@ class UserModel {
     }
 
     const isValidPassword = await validPassword({ password, db_password: userDatabase.rows[0].password })
+
     return { isValidPassword }
   }
 
   static async validatePasswordUserGoogle({ user, idUserGoogle, userData }) {
-    if (user.id === idUserGoogle) {
-      return { isValidPassword: true, passwordUser: idUserGoogle }
+    const user_id = user.id
+    let userDatabase
+
+    try {
+      userDatabase = await client.execute({
+        sql: `SELECT 
+                password,
+                user_id,
+                nickname
+              FROM users
+              WHERE user_id = ?`,
+        args: [user_id]
+      })
+    } catch (error) {
+      throw errorDatabase({ error })
+    }
+
+    if (userDatabase.rows[0].length === 0) {
+      throw {
+        status: 400,
+        error: "This user no exist",
+        type: "userNotFound",
+        field: "user_id",
+        details: "This user is possible have been deleted  in the database may while logged in, user not found"
+      }
+    }
+
+    const passwordDatabase = userDatabase.rows[0].password
+    const verifiedPassword = await validPassword({ password: idUserGoogle, db_password: passwordDatabase })
+    const passwordUser = verifiedPassword ? idUserGoogle : ''
+
+    if (user_id === idUserGoogle) {
+      return { isValidPassword: true, passwordUser }
     }
 
     if (user.nickname === userData.nickname
       || user.nickname === userData.username
       || user.email === userData.email) {
-      return { isValidPassword: true, passwordUser: ''  }
+      return { isValidPassword: true, passwordUser }
     }
 
-    if (user.id !== idUserGoogle) {
+    if (user_id !== idUserGoogle) {
       throw {
         status: 400,
         error: "This auth not corresponding of user loged",

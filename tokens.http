@@ -7,7 +7,7 @@ Content-Type: application/json
 {
   "nickname": "Ulternae",
   "email": "Ulternae@gmail.com",
-  "password": "2515963",
+  "password": "123",
   "sql" : "DROP TABLE users"
 }
 
@@ -16,9 +16,9 @@ POST {{baseUrl}}/login
 Content-Type: application/json
 
 {
-  "nickname": "Mth2",
-  "email": "Mah2@example.com",
-  "password": "123456",
+  "nickname": "Ultisaer Revternae",
+  "email": "ultisaer.revternae@gmail.com",
+  "password": "123",
   "sql" : "DROP TABLE users"
 }
 
@@ -27,8 +27,8 @@ POST {{baseUrl}}/login
 Content-Type: application/json
 
 {
-  "nickname": "Mth",
-  "email": "aliasdon@example.com",
-  "password": "123456",
+  "nickname": "JHONATAN CASTILLO",
+  "email": "001sargento001@gmail.com",
+  "password": "103689422063917513318",
   "sql" : "DROP TABLE users"
 }
