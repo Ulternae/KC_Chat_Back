@@ -81,10 +81,11 @@ class LoginModel {
   }
 
   static async loginWithGoogle({ input }) { 
+
     const { id, password, username, email } = input
     const dataUser = { ...input }
     const response = await client.execute({
-      sql: `SELECT username, email, password, user_id 
+      sql: `SELECT username, email, password, user_id, nickname 
             FROM users 
             WHERE (user_id = ? OR (nickname = ? AND email = ?));
             `,
@@ -103,22 +104,7 @@ class LoginModel {
 
     const user = response.rows[0];
 
-    // const isValidPassword = await validPassword({
-    //   db_password: user.password,
-    //   password,
-    // });
-
-    // if (!isValidPassword) {
-    //   throw {
-    //     status: 400,
-    //     error: "The password is incorrect",
-    //     type: "wrongPassword",
-    //     field: "password",
-    //     dataUser
-    //   };
-    // }
-
-    const token = generateToken({ username: user.username, email: user.email, id: user.user_id });
+    const token = generateToken({ nickname: user.nickname, email: user.email, id: user.user_id });
     return { token };
   }
 }

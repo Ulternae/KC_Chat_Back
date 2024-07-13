@@ -1,7 +1,8 @@
 import z from 'zod';
 
 const createChatSchema = z.object({
-  friend_id: z.string()
+  friend_id: z.string(),
+  chat_id: z.string().uuid()
 });
 
 const messageChat = z.object({

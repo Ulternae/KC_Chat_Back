@@ -16,9 +16,11 @@ class ChatController {
       const data = await this.chatModel.create({
         user: req.user,
         friend_id: result.data.friend_id,
+        chat_id: result.data.chat_id
       });
       return res.status(200).json(data);
     } catch (error) {
+      console.log(error)
       return res
         .status(error.status || 500)
         .json({
@@ -35,6 +37,7 @@ class ChatController {
       const data = await this.chatModel.getChats({ user: req.user });
       res.status(200).json(data);
     } catch (error) {
+      console.log(error)
       res
         .status(error.status)
         .json({
@@ -61,6 +64,7 @@ class ChatController {
       });
       res.status(200).json(data);
     } catch (error) {
+      console.log(error)
       res
         .status(error.status)
         .json({
@@ -77,6 +81,7 @@ class ChatController {
       const data = await this.chatModel.getMessages({ user: req.user, chat_id: req.params.chat_id});
       res.status(200).json(data);
     } catch (error) {
+      console.log(error)
       res
         .status(error.status)
         .json({
@@ -93,6 +98,7 @@ class ChatController {
       const data = await this.chatModel.getChatById({ user: req.user, chat_id: req.params.chat_id});
       res.status(200).json(data);
     } catch (error) {
+      console.log(error)
       res
         .status(error.status)
         .json({
@@ -106,17 +112,3 @@ class ChatController {
 }
 
 export { ChatController };
-
-
-/* {
-  "name": "EfimeroNew",
-  "is_group": true,
-  "user_ids": [
-    "e0febc03-18f3-4ad3-ba88-2266fc3c3a51",
-    "3359757e-03f0-4d0c-b502-ee8921e83ce5",
-    "ef8174a8-403e-419d-a4eb-57e5f600fd3a",
-    "b09d180b-f031-4139-99a5-545eb076a41e",
-    "impostor"
-  ],
-  "sql" : "DROP TABLE users"
-} */

@@ -14,7 +14,7 @@ class RegisterController {
 
   create = async (req, res) => {
     const username = req.body.username || req.body.nickname
-    const avatar_id = req.body.avatar_id || 1
+    const avatar_id = req.body.avatar_id || parseInt(Math.random()*13 + 1)
     const result = validateRegister({...req.body, username, avatar_id});
     const resultSettings = validateSettings({ ...req.body.settings})
     if (!result.success || !resultSettings.success) {
@@ -61,7 +61,7 @@ class RegisterController {
       email: payload.email,
       nickname: payload.name,
       password: payload.sub,
-      avatar_id: 1,
+      avatar_id: parseInt(Math.random()*13 + 1),
     };
 
     try {

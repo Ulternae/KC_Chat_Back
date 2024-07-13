@@ -59,10 +59,12 @@ CREATE TABLE messages (
     chat_id INTEGER,
     sender_id TEXT,
     content TEXT,
-    sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    type TEXT,
+    send_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (chat_id) REFERENCES chats(chat_id),
     FOREIGN KEY (sender_id) REFERENCES users(user_id)
 );
+
 
 -- Tabla de grupos
 CREATE TABLE groups (

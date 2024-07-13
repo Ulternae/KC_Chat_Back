@@ -9,35 +9,63 @@ const client = createClient({
   authToken: process.env.TURSO_AUTH_TOKEN,
 });
 
+const errorDatabase = ({ error }) => {
+  return {
+    status: 500,
+    error: "Error in the database",
+    type: "databaseError",
+    field: "groups",
+    details: error.message,
+  };
+};
+
 class FriendModel {
   static async createRequest({ user, friend_id }) {
     const user_id = user.id;
-    const pending = FRIENDS_REQUEST_STATUSES.PENDING;
+    const accepted = FRIENDS_REQUEST_STATUSES.ACCEPTED;
     if (user_id === friend_id) {
       throw {
         status: 404,
         error: "The user and friends request is the same user.",
-        type: "Same_user",
+        type: "sameUser",
         field: "user_id, friend_id",
       };
     }
 
-    const thereIsARequest = await client.execute({
-      sql: `SELECT user_id, friend_id, status, id FROM friends 
-        WHERE user_id = :user_id AND friend_id = :friend_id
-        OR user_id = :friend_id AND friend_id = :user_id
-      `,
-      args: {
-        user_id,
-        friend_id,
-      },
-    });
+    let thereIsARequest;
+
+    try {
+      thereIsARequest = await client.execute({
+        sql: `SELECT 
+              f.user_id,
+              f.friend_id,
+              f.status,
+              f.id,
+              MAX(c.chat_id) as chat_id
+            FROM friends AS f
+            LEFT JOIN chat_users AS cu1 ON cu1.user_id = f.user_id
+            LEFT JOIN chat_users AS cu2 ON cu2.user_id = f.friend_id AND cu2.chat_id = cu1.chat_id
+            LEFT JOIN chats AS c ON c.chat_id = cu2.chat_id
+            WHERE 
+              (f.user_id = :user_id AND f.friend_id = :friend_id)
+              OR 
+              (f.user_id = :friend_id AND f.friend_id = :user_id)
+            GROUP BY f.user_id, f.friend_id, f.status, f.id
+            `,
+        args: {
+          user_id,
+          friend_id,
+        },
+      });
+    } catch (error) {
+      errorDatabase({ error });
+    }
 
     if (thereIsARequest.rows.length === 0) {
       try {
         await client.execute({
           sql: `INSERT INTO friends (user_id, friend_id, status) VALUES ( ? , ? , ?)`,
-          args: [user_id, friend_id, pending],
+          args: [user_id, friend_id, accepted],
         });
 
         const friend = await client.execute({
@@ -64,19 +92,21 @@ class FriendModel {
     const { status, id } = thereIsARequest.rows[0];
     const isRejected = status === FRIENDS_REQUEST_STATUSES.REJECTED;
 
+    const infoFriends = thereIsARequest.rows[thereIsARequest.rows.length - 1];
     if (!isRejected) {
       throw {
         status: 409,
-        error: "The request is already exists",
-        type: "friends",
+        error: "The request already exists",
+        type: "requestFriendAlreadyExists",
         field: "user_id, friend_id",
+        details: infoFriends,
       };
     }
 
     try {
       await client.execute({
         sql: `UPDATE friends SET status = ? WHERE id = ?`,
-        args: [FRIENDS_REQUEST_STATUSES.PENDING, id],
+        args: [FRIENDS_REQUEST_STATUSES.ACCEPTED, id],
       });
 
       const friend = await client.execute({
@@ -87,16 +117,10 @@ class FriendModel {
       const { username, nickname } = friend.rows[0];
 
       return {
-        message: `Success update request to user ${username} (${nickname})`,
+        message: `Success updating request to user ${username} (${nickname})`,
       };
     } catch (error) {
-      throw {
-        status: 500,
-        error: "An error occurred while creating the friend request",
-        type: "databaseError",
-        field: "Friends",
-        details: error,
-      };
+      errorDatabase({ error });
     }
   }
 
@@ -107,11 +131,35 @@ class FriendModel {
 
     try {
       getFriends = await client.execute({
-        sql: `SELECT * FROM friends 
-              WHERE user_id = :user_id OR friend_id = :user_id`,
+        sql: `WITH FilteredFriends AS (
+                SELECT id, user_id, friend_id, status
+                FROM friends
+                WHERE user_id = :user_id OR friend_id = :user_id
+              ),
+              ChatRelations AS (
+                SELECT DISTINCT
+                  (CASE WHEN cu1.user_id < cu2.user_id THEN cu1.user_id ELSE cu2.user_id END) AS user1,
+                  (CASE WHEN cu1.user_id > cu2.user_id THEN cu1.user_id ELSE cu2.user_id END) AS user2,
+                  cu1.chat_id
+                FROM chat_users cu1
+                INNER JOIN chat_users cu2 ON cu1.chat_id = cu2.chat_id
+                INNER JOIN chats c ON cu1.chat_id = c.chat_id
+                WHERE c.is_group = 0
+              )
+              SELECT 
+                f.user_id,
+                f.friend_id,
+                f.status,
+                cr.chat_id
+              FROM FilteredFriends AS f
+              LEFT JOIN ChatRelations AS cr 
+                ON (CASE WHEN f.user_id < f.friend_id THEN f.user_id ELSE f.friend_id END) = cr.user1
+                AND (CASE WHEN f.user_id > f.friend_id THEN f.user_id ELSE f.friend_id END) = cr.user2;`,
         args: { user_id },
       });
+
     } catch (error) {
+      console.log(error);
       throw {
         status: 500,
         error: "There was an error getting your friend request requests.",
@@ -194,7 +242,7 @@ class FriendModel {
               WHERE id = :id`,
         args: {
           status: validStatus,
-          id: response.rows[0].id
+          id: response.rows[0].id,
         },
       });
     } catch (error) {

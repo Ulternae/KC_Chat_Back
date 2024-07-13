@@ -251,7 +251,6 @@ class ProfileModel {
               sql: `DELETE FROM chats WHERE chat_id = ?`,
               args: [chat_id]
             });
-            console.log(`Eliminando el chat ${chat_id}:`, chat);
           } else {
             // 2.1. Eliminar solo los mensajes del usuario en el chat grupal
             await transaction.execute({
@@ -329,7 +328,6 @@ class ProfileModel {
   
     } catch (error) {
       await transaction.rollback();
-      console.error('Error al eliminar el usuario:', error);
       throw errorDatabase({ error });
     }
   

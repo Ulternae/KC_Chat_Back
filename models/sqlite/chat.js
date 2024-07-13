@@ -10,8 +10,7 @@ const client = createClient({
 });
 
 class ChatModel {
-  static async create({ user, friend_id }) {
-    const chat_id = crypto.randomUUID();
+  static async create({ user, friend_id, chat_id }) {
     const user_id = user.id;
 
     let validUser;
@@ -73,7 +72,7 @@ class ChatModel {
 
     if (existingChat.rows.length > 0) {
       throw {
-        status: 400,
+        status: 404,
         error: "A chat already exists between these users.",
         type: "Chat_already_exists",
         field: "chat_id",
@@ -130,64 +129,93 @@ class ChatModel {
         details: error.message,
       };
     }
-    
-    return { message: "Chat created successfully." };
+
+    return { message: "Chat created successfully", chat_id };
   }
 
   static async getChats({ user }) {
-    const { nickname } = user;
     const user_id = user.id;
-    const chatsGroups = {};
+    let nickname = user.nickname;
+
+    if (!nickname) {
+      try {
+        const nicknameResult = await client.execute({
+          sql: `
+            SELECT nickname
+            FROM users
+            WHERE user_id = ?
+          `,
+          args: [user_id],
+        });
+
+        if (nicknameResult.rows.length === 0) {
+          throw new Error("User not found");
+        }
+
+        nickname = nicknameResult.rows[0].nickname;
+      } catch (error) {
+        throw {
+          status: 404,
+          error: "User not found",
+          type: "userNotFound",
+          field: "user_id",
+        };
+      }
+    }
+
     try {
-      const response = await client
+      // Obtener los chats del usuario
+      const chatRows = await client
         .execute({
           sql: `
-            SELECT c.chat_id, c.is_group
-            FROM chats AS c
-            INNER JOIN chat_users AS cu ON cu.chat_id = c.chat_id 
-            INNER JOIN users AS u ON u.user_id = cu.user_id
-            WHERE cu.user_id = ? 
+          SELECT c.chat_id, c.is_group
+          FROM chats AS c
+          INNER JOIN chat_users AS cu ON cu.chat_id = c.chat_id
+          WHERE cu.user_id = ?
         `,
           args: [user_id],
         })
         .then((data) => data.rows);
 
-      const dataChats = await Promise.all(
-        response.map(({ chat_id }) =>
+      // Obtener detalles de cada chat
+      const chatDetails = await Promise.all(
+        chatRows.map(({ chat_id }) =>
           client
             .execute({
               sql: `
-              SELECT c.chat_id, c.name, c.is_group, u.user_id, u.nickname, u.email
-              FROM chats AS c
-              INNER JOIN chat_users AS cu ON cu.chat_id = c.chat_id 
-              INNER JOIN users AS u ON u.user_id = cu.user_id
-              WHERE c.chat_id = ?
-            `,
+            SELECT 
+              c.chat_id,
+              c.name,
+              c.is_group,
+              u.user_id,
+              u.nickname,
+              u.email,
+              u.avatar_id,
+              a.url AS avatar_url
+            FROM chats AS c
+            INNER JOIN chat_users AS cu ON cu.chat_id = c.chat_id
+            INNER JOIN users AS u ON u.user_id = cu.user_id
+            LEFT JOIN avatars AS a ON u.avatar_id = a.avatar_id 
+            WHERE c.chat_id = ?
+          `,
               args: [chat_id],
             })
             .then((response) => response.rows)
         )
-      ).catch((error) => {
-        throw {
-          status: 500,
-          error: "Error fetching chat details",
-          type: "databaseError",
-          field: "chat_id",
-          details: error.message,
-        };
-      });
+      );
 
       const responseChatIds = [];
       const responseGroupsIds = [];
 
-      dataChats.forEach((chat) => {
-        const isGroup = chat[0].is_group === 0;
+      chatDetails.forEach((chat) => {
+        const isGroup = chat[0].is_group;
         let name = chat[0].name;
 
-        if (isGroup) {
-          const isSameUser =
-            nickname.toLowerCase() === chat[0].nickname.toLowerCase();
-          name = isSameUser ? chat[1].nickname : chat[0].nickname;
+        if (!isGroup) {
+          const otherUser = chat.find(
+            (u) => u.nickname.toLowerCase() !== nickname.toLowerCase()
+          );
+          name = otherUser ? otherUser.nickname : name;
         }
 
         const data = {
@@ -198,15 +226,26 @@ class ChatModel {
             nickname: user.nickname,
             email: user.email,
             user_id: user.user_id,
+            avatar_url: user.avatar_url,
+            avatar_id: user.avatar_id,
           })),
         };
 
-        isGroup ? responseChatIds.push(data) : responseGroupsIds.push(data);
+        if (isGroup) {
+          responseGroupsIds.push(data);
+        } else {
+          responseChatIds.push(data);
+        }
       });
 
-      chatsGroups.chats = responseChatIds;
-      chatsGroups.groups = responseGroupsIds;
+      const chatsGroups = {
+        chats: responseChatIds,
+        groups: responseGroupsIds,
+      };
+
+      return chatsGroups;
     } catch (error) {
+      console.log(error)
       throw {
         status: 500,
         error: "There was an error fetching the chats",
@@ -215,7 +254,6 @@ class ChatModel {
         details: error.message,
       };
     }
-    return chatsGroups;
   }
 
   static async sendMessage({ user, content, chat_id }) {
@@ -283,7 +321,6 @@ class ChatModel {
     const { nickname } = user;
 
     let validChat;
-
     try {
       const response = await client.execute({
         sql: `SELECT is_group FROM chats WHERE chat_id = ?`,
@@ -374,8 +411,6 @@ class ChatModel {
 
   static async getChatById({ user, chat_id }) {
     const { nickname } = user;
-    const user_id = user.id;
-
     let validChat;
 
     try {
@@ -409,12 +444,21 @@ class ChatModel {
     try {
       chatInfo = await client
         .execute({
-          sql: `
-        SELECT c.chat_id, c.name, c.is_group, u.user_id, u.nickname, u.email
-        FROM chats AS c
-        INNER JOIN chat_users AS cu ON cu.chat_id = c.chat_id 
-        INNER JOIN users AS u ON u.user_id = cu.user_id
-        WHERE c.chat_id = ?
+          sql: ` SELECT 
+                    c.chat_id,
+                    c.name,
+                    c.is_group,
+                    u.user_id,
+                    u.nickname,
+                    u.username,
+                    u.email,
+                    u.avatar_id,
+                    a.url AS avatar_url
+                  FROM chats AS c
+                  INNER JOIN chat_users AS cu ON cu.chat_id = c.chat_id 
+                  INNER JOIN users AS u ON u.user_id = cu.user_id
+                  LEFT JOIN avatars AS a ON a.avatar_id = u.avatar_id
+                  WHERE c.chat_id = ?
       `,
           args: [chat_id],
         })
@@ -443,7 +487,7 @@ class ChatModel {
         responseChats.chat_id = chat.chat_id;
       }
 
-      responseChats.name = chat.name 
+      responseChats.name = chat.name;
 
       if (!responseChats.name) {
         responseChats.name =
@@ -458,10 +502,13 @@ class ChatModel {
         nickname: chat.nickname,
         email: chat.email,
         user_id: chat.user_id,
+        avatar_id: chat.avatar_id,
+        avatar_url: chat.avatar_url,
+        username: chat.username
       });
     });
 
-    return responseChats
+    return responseChats;
   }
 }
 
