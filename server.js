@@ -11,10 +11,11 @@ import { FriendModel } from "./models/sqlite/friend.js";
 import { GroupChatModel } from "./models/sqlite/groupChat.js";
 import { JoinModel } from "./models/sqlite/join.js";
 import { SettingsModel } from "./models/sqlite/settings.js";
+import { MessageModel } from "./sockets/models/message.js";
+import { RoomModel } from "./sockets/models/room.js";
 
-
-createApp({ 
-  groupModel: GroupModel, 
+const modelExpress = {
+  groupModel: GroupModel,
   loginModel: LoginModel,
   registerModel: RegisterModel,
   profileModel: ProfileModel,
@@ -24,5 +25,11 @@ createApp({
   friendModel: FriendModel,
   groupChatModel: GroupChatModel,
   joinModel: JoinModel,
-  settingsModel: SettingsModel
-});
+  settingsModel: SettingsModel,
+};
+
+const modelSockets = {
+  messageModel: MessageModel,
+  roomModel: RoomModel
+}
+createApp({ modelExpress , modelSockets});

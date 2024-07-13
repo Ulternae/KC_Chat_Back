@@ -9,13 +9,14 @@
     "google-auth-library": "^9.10.0",
     "jsonwebtoken": "9.0.2",
     "react-google-login": "^5.2.2",
+    "socket.io": "^4.7.5",
     "zod": "^3.23.8"
   },
   "name": "back",
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "dev": "node --watch serverSqlite.js"
+    "dev": "node --watch server.js"
   },
   "keywords": [],
   "author": "",
