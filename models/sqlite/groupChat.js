@@ -145,8 +145,8 @@ class GroupChatModel {
     const { group, members } = await this.validGroup({ group_id });
     const creator_id = group.creator_id;
     const chat_users = input.chat_users;
-    const chat_id = crypto.randomUUID();
-
+    const chat_id = input.chat_id
+    
     await this.validPermissions({ members, user_id, creator_id });
 
     const { validMembers, invalidMembers } = chat_users.reduce(

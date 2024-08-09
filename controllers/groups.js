@@ -11,7 +11,6 @@ class GroupController {
 
   createGroup = async (req, res) => {
     const result = validateGroup(req.body);
-
     if (!result.success) {
       return res.status(422).json({ error: JSON.parse(result.error.message) });
     }
@@ -38,6 +37,7 @@ class GroupController {
       const data = await this.groupModel.getAllGroups({ user: req.user });
       res.json(data);
     } catch (error) {
+      console.log(error)
       res.status(error.status).json({
         error: error.error,
         type: error.type,

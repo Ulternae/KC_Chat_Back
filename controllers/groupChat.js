@@ -7,7 +7,6 @@ class GroupChatController {
 
   createChatInGroup = async (req, res) => {
     const response = validateGroupChat(req.body)
-    
     if (!response.success) {
       return res.status(422).json({ error: JSON.parse(response.error.message) });
     }
@@ -15,6 +14,7 @@ class GroupChatController {
       const data = await this.groupChatModel.createChatInGroup({ user_id : req.user.id , group_id: req.params.group_id, input: response.data });
       res.json(data);
     } catch (error) {
+      console.log(error)
       res
       .status(error.status || 500)
       .json({ error: error.error, type: error.type, field: error.field, details: error.details});

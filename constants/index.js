@@ -1,0 +1,6 @@
+const OPTIONS_PARTICIPANTS_GROUP = {
+  MODERATOR : 'moderator',
+  USER: 'user',
+}
+
+export { OPTIONS_PARTICIPANTS_GROUP }

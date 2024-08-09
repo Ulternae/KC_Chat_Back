@@ -70,11 +70,15 @@ CREATE TABLE messages (
 CREATE TABLE groups (
     group_id TEXT PRIMARY KEY,  -- UUID como texto
     name TEXT,
+    category TEXT,
+    color TEXT,
+    avatar_id INTEGER,
     description TEXT,
     is_public BOOLEAN,
     creator_id TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (creator_id) REFERENCES users(user_id)
+    FOREIGN KEY (avatar_id) REFERENCES avatars(avatar_id)
 );
 
 

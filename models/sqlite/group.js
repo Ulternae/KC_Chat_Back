@@ -1,11 +1,22 @@
 import dotenv from "dotenv";
 import { createClient } from "@libsql/client";
+import { OPTIONS_PARTICIPANTS_GROUP as OPG } from "../../constants/index.js";
 dotenv.config();
 
 const client = createClient({
   url: process.env.TURSO_DATABASE_URL,
   authToken: process.env.TURSO_AUTH_TOKEN,
 });
+
+const errorDatabase = ({ error }) => {
+  return {
+    status: 500,
+    error: "Error in the database",
+    type: "databaseError",
+    field: "groups",
+    details: error.message,
+  };
+};
 
 class GroupModel {
   static async validUsers([...users]) {
@@ -117,9 +128,16 @@ class GroupModel {
   }
 
   static async createGroup({ user, input }) {
-    const { name, description, is_public } = input;
+    const {
+      name,
+      description,
+      is_public,
+      category,
+      color,
+      avatar_id,
+      group_id,
+    } = input;
     const validUsers = await this.validUsers([user.id]);
-    const group_id = crypto.randomUUID();
 
     try {
       await client.execute({
@@ -128,9 +146,21 @@ class GroupModel {
               name, 
               description, 
               is_public, 
-              creator_id 
-            ) VALUES (?, ?, ?, ?, ?)`,
-        args: [group_id, name, description, is_public, validUsers[0]],
+              creator_id,
+              category,
+              color,
+              avatar_id     
+            ) VALUES (?, ?, ?, ?, ?, ? , ? ,?)`,
+        args: [
+          group_id,
+          name,
+          description,
+          is_public,
+          validUsers[0],
+          category,
+          color,
+          avatar_id,
+        ],
       });
 
       await client.execute({
@@ -161,39 +191,118 @@ class GroupModel {
   }
 
   static async getAllGroups({ user }) {
-    const [user_id] = await this.validUsers([user.id]);
-
+    const user_id = user.id;
     let groups;
 
     try {
       groups = await client.execute({
         sql: `SELECT 
                 g.group_id, 
-                g.name, 
+                g.name,
+                g.category,
+                g.color,
+                g.avatar_id, 
                 g.description, 
                 g.is_public, 
-                g.creator_id, 
-                u.nickname AS creator_nickname 
+                g.creator_id,
+                GROUP_CONCAT(
+                  DISTINCT gm.user_id || ':' || gm.is_moderator
+                ) AS user_ids,
+                GROUP_CONCAT(
+                  DISTINCT gc.chat_id
+                ) AS chats_ids
               FROM groups AS g
-                INNER JOIN group_members AS gm ON gm.group_id = g.group_id
-                INNER JOIN users AS u ON u.user_id = gm.user_id
-              WHERE u.user_id = ?
-                OR g.is_public = true
-              ORDER BY g.is_public
+              LEFT JOIN group_members AS gm ON gm.group_id = g.group_id
+              LEFT JOIN group_chats AS gc ON gc.group_id = g.group_id
+              WHERE g.creator_id = ? OR g.is_public = true
+              GROUP BY g.group_id
           `,
         args: [user_id],
       });
     } catch (error) {
+      throw errorDatabase({ error });
+    }
+
+    if (!groups || groups.rows.length === 0) {
+      return { groupsUser: [], groupsNotBelongToUser: [] };
+    }
+
+    const usersIds = new Set(
+      groups.rows.flatMap((g) => {
+        return g.user_ids
+          ? g.user_ids.split(",").map((u) => u.split(":")[0])
+          : [];
+      })
+    );
+
+    const getInfoUser = async ({ user_id }) => {
+      try {
+        const res = await client.execute({
+          sql: `SELECT 
+                  u.user_id as friend_id,
+                  u.username,
+                  u.nickname, 
+                  u.email,
+                  u.avatar_id,
+                  a.url AS avatar_url
+                  FROM users AS u 
+                  LEFT JOIN avatars AS a ON u.avatar_id = a.avatar_id 
+                  WHERE u.user_id = ?`,
+          args: [user_id],
+        });
+
+        if (res.rows.length > 0) {
+          return res.rows[0];
+        }
+      } catch (error) {
+        throw errorDatabase({ error });
+      }
+    };
+
+    let infoUsers = [];
+
+    try {
+      infoUsers = await Promise.all(
+        Array.from(usersIds).map((user_id) => getInfoUser({ user_id }))
+      ).then((res) => res.filter((data) => !!data));
+    } catch (error) {
       throw {
-        status: 500,
-        error: "There was an error fetching groups",
-        type: "databaseError",
-        field: "groups",
+        status: 404,
+        error: "Error by obtaining information from users",
+        type: "errorObtainInfoUsers",
+        field: "users",
         details: error.message,
       };
     }
 
-    return groups.rows;
+    const groupsInfo = groups.rows.map((group) => {
+      const usersIds = group.user_ids ? group.user_ids.split(",") : [];
+      const detailsUsers = usersIds.map((u) => {
+        const [user_id, is_moderator] = u.split(":");
+        const infoUser = infoUsers.find((iu) => iu.friend_id === user_id);
+        const permissions = is_moderator ? OPG.MODERATOR : OPG.USER;
+        return {
+          ...infoUser,
+          is_moderator,
+          permissions,
+        };
+      });
+      return {
+        ...group,
+        detailsUsers,
+      };
+    });
+
+    const groupsUser = groupsInfo.filter(
+      (g) => g.user_ids?.includes(user.id) || g.creator_id === user.id
+    );
+    const groupsNotBelongToUser = groupsInfo.filter(
+      (g) => !g.user_ids?.includes(user.id)
+    );
+    return {
+      groupsUser,
+      groupsNotBelongToUser,
+    };
   }
 
   static async getGroupById({ group_id, user }) {
@@ -240,7 +349,6 @@ class GroupModel {
     }
     return { message: "Updated Group Successfully" };
   }
-
   /* VERIFICAR FUTURO ELIMINACION CHATS DEL GRUPO */
   static async deleteGroup({ group_id, user }) {
     const { creator_id } = await this.validGroup({ group_id });
@@ -337,7 +445,9 @@ class GroupModel {
     const users_id = await this.validUsers([user.id]);
     const members_ids_input = await this.validUsers([...users_ids]);
 
-    await this.validPermision({ group_id, creator_id, user_id: users_id[0] });
+    if (!is_public) {
+      await this.validPermision({ group_id, creator_id, user_id: users_id[0] });
+    }
 
     let members_ids_existings;
 
