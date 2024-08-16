@@ -280,7 +280,7 @@ class GroupModel {
       const detailsUsers = usersIds.map((u) => {
         const [user_id, is_moderator] = u.split(":");
         const infoUser = infoUsers.find((iu) => iu.friend_id === user_id);
-        const permissions = is_moderator ? OPG.MODERATOR : OPG.USER;
+        const permissions = Number(is_moderator) ? OPG.MODERATOR : OPG.USER;
         return {
           ...infoUser,
           is_moderator,
