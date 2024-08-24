@@ -349,13 +349,15 @@ class GroupModel {
     }
     return { message: "Updated Group Successfully" };
   }
-  /* VERIFICAR FUTURO ELIMINACION CHATS DEL GRUPO */
+
   static async deleteGroup({ group_id, user }) {
-    const { creator_id } = await this.validGroup({ group_id });
-    await this.validPermision({ group_id, creator_id, user_id: user.id });
+    let transaction;
 
     try {
-      const transaction = await client.transaction("write");
+      const { creator_id } = await this.validGroup({ group_id });
+      await this.validPermision({ group_id, creator_id, user_id: user.id });
+
+      transaction = await client.transaction("write");
       let chats;
 
       await transaction.execute({
@@ -425,14 +427,10 @@ class GroupModel {
 
       await transaction.commit();
     } catch (error) {
-      await transaction.rollback();
-      throw {
-        status: 500,
-        error: "Failed delete group",
-        type: "databaseError",
-        field: "groups, group_members, chats",
-        details: error.message,
-      };
+      if (transaction) {
+        await transaction.rollback();
+      }
+      throw errorDatabase({ error });
     }
 
     return { message: "deleteGroup" };
