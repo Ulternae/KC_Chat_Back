@@ -33,7 +33,6 @@ class GroupController {
 
   getAllGroups = async (req, res) => {
     try {
-      // Obtener todos los chats publicos y los del usuario pensar en la logica para que un usuario se pueda autoinvitar en un chat publico
       const data = await this.groupModel.getAllGroups({ user: req.user });
       res.json(data);
     } catch (error) {

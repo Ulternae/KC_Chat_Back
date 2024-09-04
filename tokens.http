@@ -7,7 +7,7 @@ Content-Type: application/json
 {
   "nickname": "Ulternae",
   "email": "Ulternae@gmail.com",
-  "password": "123",
+  "password": "1018",
   "sql" : "DROP TABLE users"
 }
 
