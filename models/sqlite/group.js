@@ -695,7 +695,8 @@ class GroupModel {
 
     try {
       await client.execute({
-        sql: `DELETE FROM group_members
+        sql: `UPDATE group_members
+              SET is_moderator = 0
               WHERE user_id = ? AND group_id = ?`,
         args: [moderator_id, group_id],
       });
